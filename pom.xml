@@ -31,6 +31,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jjwt.version>0.12.6</jjwt.version>
         <springdoc.version>2.6.0</springdoc.version>
+        <!-- 兼容本机 JDK 21，避免 TypeTag.UNKNOWN 初始化失败 -->
+        <lombok.version>1.18.38</lombok.version>
     </properties>
 
     <dependencyManagement>

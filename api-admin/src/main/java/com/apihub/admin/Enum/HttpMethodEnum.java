@@ -43,4 +43,18 @@ public enum HttpMethodEnum {
     public String getDesc() {
         return desc;
     }
+
+    /** 按 HTTP 方法名解析，忽略大小写；无法识别时返回 null */
+    public static HttpMethodEnum fromCode(String code) {
+        if (code == null || code.isBlank()) {
+            return null;
+        }
+        String normalized = code.trim().toUpperCase();
+        for (HttpMethodEnum item : values()) {
+            if (item.code.equals(normalized)) {
+                return item;
+            }
+        }
+        return null;
+    }
 }

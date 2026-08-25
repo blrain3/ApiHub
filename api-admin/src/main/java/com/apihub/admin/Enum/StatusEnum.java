@@ -34,4 +34,17 @@ public enum StatusEnum {
     public String getMessage() {
         return message;
     }
+
+    /** 按数据库存储值解析；无法识别时返回 null */
+    public static StatusEnum fromCode(Integer code) {
+        if (code == null) {
+            return null;
+        }
+        for (StatusEnum item : values()) {
+            if (item.code.equals(code)) {
+                return item;
+            }
+        }
+        return null;
+    }
 }

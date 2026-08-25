@@ -48,9 +48,15 @@ function makeMockApp(appName: string, qpsLimit: number, dailyQuota: number): Api
   };
 }
 
-export async function fetchInterfaces(): Promise<ApiInterface[]> {
+export async function fetchInterfaces(params?: {
+  keyword?: string;
+  status?: number | "";
+}): Promise<ApiInterface[]> {
   return fetchWithMockFallback(async () => {
-    const res = await http.get<ApiResult<ApiInterface[]>>("/admin/interfaces");
+    const query: Record<string, string | number> = {};
+    if (params?.keyword) query.keyword = params.keyword;
+    if (params?.status === 0 || params?.status === 1) query.status = params.status;
+    const res = await http.get<ApiResult<ApiInterface[]>>("/admin/interfaces", { params: query });
     const body = res.data;
     const list = isApiResult(body) ? body.data || [] : [];
     return list.map(enrichInterface);
@@ -59,8 +65,57 @@ export async function fetchInterfaces(): Promise<ApiInterface[]> {
 
 export async function fetchInterfaceById(id: number): Promise<ApiInterface | null> {
   if (!Number.isFinite(id) || id <= 0) return null;
-  const list = await fetchInterfaces();
-  return list.find((item) => item.id === id) || null;
+  try {
+    const res = await http.get<ApiResult<ApiInterface>>(`/admin/interfaces/${id}`);
+    const body = res.data;
+    if (!isApiResult(body) || !body.data) return null;
+    return enrichInterface(body.data);
+  } catch {
+    return null;
+  }
+}
+
+/** 创建接口资产（管理员）；新建默认下线 */
+export async function createInterface(payload: {
+  name: string;
+  path: string;
+  method: string;
+  version?: string;
+  category?: string;
+  description?: string;
+}): Promise<ApiInterface> {
+  const res = await http.post<ApiResult<ApiInterface>>("/admin/interfaces", payload);
+  const body = res.data;
+  if (!isApiResult(body) || !body.data) throw new Error("响应格式异常");
+  return enrichInterface(body.data);
+}
+
+/** 更新接口资产（管理员） */
+export async function updateInterface(
+  id: number,
+  payload: {
+    name: string;
+    path: string;
+    method: string;
+    version?: string;
+    category?: string;
+    description?: string;
+  }
+): Promise<ApiInterface> {
+  const res = await http.put<ApiResult<ApiInterface>>(`/admin/interfaces/${id}`, payload);
+  const body = res.data;
+  if (!isApiResult(body) || !body.data) throw new Error("响应格式异常");
+  return enrichInterface(body.data);
+}
+
+/** 上线 / 下线接口（管理员） */
+export async function updateInterfaceStatus(id: number, status: number): Promise<void> {
+  await http.put(`/admin/interfaces/${id}/status`, { status });
+}
+
+/** 删除接口资产（管理员）；后端会同步清理开通关系 */
+export async function deleteInterface(id: number): Promise<void> {
+  await http.delete(`/admin/interfaces/${id}`);
 }
 
 export async function fetchOverview(): Promise<OverviewStat> {

@@ -1,9 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import { Plus, Search } from "@element-plus/icons-vue";
-import { fetchInterfaces } from "@/api/admin";
+import {
+  createInterface,
+  deleteInterface,
+  fetchInterfaces,
+  updateInterface,
+  updateInterfaceStatus,
+} from "@/api/admin";
 import CanAccess from "@/components/CanAccess.vue";
 import MethodBadge from "@/components/MethodBadge.vue";
 import PageHeader from "@/components/PageHeader.vue";
@@ -14,6 +20,7 @@ import type { ApiInterface } from "@/types";
 const router = useRouter();
 const { Perm, isAdmin } = useAccess();
 const loading = ref(false);
+const saving = ref(false);
 const keyword = ref("");
 const status = ref<number | "">("");
 const list = ref<ApiInterface[]>([]);
@@ -38,9 +45,13 @@ const filtered = computed(() =>
   })
 );
 
-onMounted(async () => {
+async function loadList() {
   const result = await withLoading(loading, () => fetchInterfaces());
   if (result) list.value = result;
+}
+
+onMounted(() => {
+  loadList();
 });
 
 function openCreate() {
@@ -62,14 +73,68 @@ function openEdit(item: ApiInterface) {
   dialog.value = true;
 }
 
-function save() {
-  ElMessage.success("演示环境：接口资产已进入发布流，待后端 CRUD 接入后持久化");
-  dialog.value = false;
+async function save() {
+  if (!form.name.trim() || !form.path.trim()) {
+    ElMessage.warning("请填写接口名称和路径");
+    return;
+  }
+  const payload = {
+    name: form.name.trim(),
+    method: form.method,
+    path: form.path.trim(),
+    version: form.version || "v1",
+    category: form.category.trim() || undefined,
+    description: form.description.trim() || undefined,
+  };
+  try {
+    saving.value = true;
+    if (editing.value) {
+      const updated = await updateInterface(editing.value.id, payload);
+      const idx = list.value.findIndex((i) => i.id === updated.id);
+      if (idx >= 0) list.value[idx] = updated;
+      else list.value.unshift(updated);
+      ElMessage.success("接口已更新");
+    } else {
+      const created = await createInterface(payload);
+      list.value.unshift(created);
+      ElMessage.success("接口已创建（默认下线，请手动上线）");
+    }
+    dialog.value = false;
+  } catch (e: unknown) {
+    ElMessage.error(e instanceof Error ? e.message : "保存失败");
+  } finally {
+    saving.value = false;
+  }
 }
 
-function toggleStatus(item: ApiInterface) {
-  item.status = item.status === 1 ? 0 : 1;
-  ElMessage.success(item.status === 1 ? "已上线（前端演示）" : "已下线（前端演示）");
+async function toggleStatus(item: ApiInterface) {
+  const next = item.status === 1 ? 0 : 1;
+  try {
+    await updateInterfaceStatus(item.id, next);
+    item.status = next;
+    ElMessage.success(next === 1 ? "已上线" : "已下线");
+  } catch (e: unknown) {
+    ElMessage.error(e instanceof Error ? e.message : "状态更新失败");
+  }
+}
+
+async function remove(item: ApiInterface) {
+  try {
+    await ElMessageBox.confirm(`确认删除接口「${item.name}」？相关应用开通关系也会一并清除。`, "删除确认", {
+      type: "warning",
+      confirmButtonText: "删除",
+      cancelButtonText: "取消",
+    });
+  } catch {
+    return;
+  }
+  try {
+    await deleteInterface(item.id);
+    list.value = list.value.filter((i) => i.id !== item.id);
+    ElMessage.success("已删除");
+  } catch (e: unknown) {
+    ElMessage.error(e instanceof Error ? e.message : "删除失败");
+  }
 }
 
 function goDetail(item: ApiInterface) {
@@ -127,6 +192,7 @@ function goDetail(item: ApiInterface) {
             <el-button :type="item.status === 1 ? 'warning' : 'success'" @click="toggleStatus(item)">
               {{ item.status === 1 ? "下线" : "上线" }}
             </el-button>
+            <el-button type="danger" plain @click="remove(item)">删除</el-button>
           </CanAccess>
         </div>
       </article>
@@ -136,18 +202,19 @@ function goDetail(item: ApiInterface) {
 
     <el-dialog v-model="dialog" :title="editing ? '编辑接口' : '创建接口'" width="520px">
       <el-form label-position="top">
-        <el-form-item label="接口名称">
+        <el-form-item label="接口名称" required>
           <el-input v-model="form.name" placeholder="例如 Weather API" />
         </el-form-item>
-        <el-form-item label="请求方式">
+        <el-form-item label="请求方式" required>
           <el-select v-model="form.method" style="width: 100%">
             <el-option label="GET" value="GET" />
             <el-option label="POST" value="POST" />
             <el-option label="PUT" value="PUT" />
             <el-option label="DELETE" value="DELETE" />
+            <el-option label="PATCH" value="PATCH" />
           </el-select>
         </el-form-item>
-        <el-form-item label="路径">
+        <el-form-item label="路径" required>
           <el-input v-model="form.path" placeholder="/api/open/weather" />
         </el-form-item>
         <el-form-item label="版本">
@@ -162,7 +229,7 @@ function goDetail(item: ApiInterface) {
       </el-form>
       <template #footer>
         <el-button @click="dialog = false">取消</el-button>
-        <el-button type="primary" @click="save">保存</el-button>
+        <el-button type="primary" :loading="saving" @click="save">保存</el-button>
       </template>
     </el-dialog>
   </div>
@@ -229,6 +296,7 @@ code {
 }
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   padding-top: 4px;
 }

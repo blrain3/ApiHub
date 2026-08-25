@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { ArrowLeft } from "@element-plus/icons-vue";
-import { fetchInterfaceById } from "@/api/admin";
+import { fetchInterfaceById, updateInterfaceStatus } from "@/api/admin";
 import CanAccess from "@/components/CanAccess.vue";
 import MethodBadge from "@/components/MethodBadge.vue";
 import { useAccess } from "@/composables/useAccess";
@@ -14,6 +14,7 @@ const route = useRoute();
 const router = useRouter();
 const { Perm, isAdmin } = useAccess();
 const loading = ref(true);
+const statusSaving = ref(false);
 const api = ref<ApiInterface | null>(null);
 
 const example = computed(() => api.value?.responseExample || "{}");
@@ -46,10 +47,19 @@ function copyJson() {
   ElMessage.success("已复制响应示例");
 }
 
-function toggleStatus() {
+async function toggleStatus() {
   if (!api.value) return;
-  api.value.status = api.value.status === 1 ? 0 : 1;
-  ElMessage.success(api.value.status === 1 ? "已上线（前端演示）" : "已下线（前端演示）");
+  const next = api.value.status === 1 ? 0 : 1;
+  try {
+    statusSaving.value = true;
+    await updateInterfaceStatus(api.value.id, next);
+    api.value.status = next;
+    ElMessage.success(next === 1 ? "已上线" : "已下线");
+  } catch (e: unknown) {
+    ElMessage.error(e instanceof Error ? e.message : "状态更新失败");
+  } finally {
+    statusSaving.value = false;
+  }
 }
 </script>
 
@@ -81,6 +91,7 @@ function toggleStatus() {
           <CanAccess :permission="Perm.API_MANAGE">
             <el-button
               size="small"
+              :loading="statusSaving"
               :type="api.status === 1 ? 'warning' : 'success'"
               @click="toggleStatus"
             >
