@@ -1,7 +1,7 @@
-package com.apihub.admin.service.serviceImpl;
+package com.apihub.admin.service.impl;
 
-import com.apihub.admin.Enum.HttpMethodEnum;
-import com.apihub.admin.Enum.StatusEnum;
+import com.apihub.admin.enums.HttpMethodEnum;
+import com.apihub.admin.enums.StatusEnum;
 import com.apihub.admin.dto.InterfaceCreateRequest;
 import com.apihub.admin.dto.InterfaceStatusRequest;
 import com.apihub.admin.dto.InterfaceUpdateRequest;

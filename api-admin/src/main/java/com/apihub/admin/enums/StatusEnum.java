@@ -1,4 +1,4 @@
-package com.apihub.admin.Enum;
+package com.apihub.admin.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 

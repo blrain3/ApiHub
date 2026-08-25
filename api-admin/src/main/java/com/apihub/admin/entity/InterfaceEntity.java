@@ -1,7 +1,7 @@
 package com.apihub.admin.entity;
 
-import com.apihub.admin.Enum.HttpMethodEnum;
-import com.apihub.admin.Enum.StatusEnum;
+import com.apihub.admin.enums.HttpMethodEnum;
+import com.apihub.admin.enums.StatusEnum;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;

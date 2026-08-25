@@ -1,6 +1,6 @@
-package com.apihub.admin.service.serviceImpl;
+package com.apihub.admin.service.impl;
 
-import com.apihub.admin.Enum.StatusEnum;
+import com.apihub.admin.enums.StatusEnum;
 import com.apihub.admin.dto.AppCreateRequest;
 import com.apihub.admin.dto.AppCreatedVO;
 import com.apihub.admin.dto.AppDetailVO;
