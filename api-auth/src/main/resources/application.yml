@@ -12,7 +12,7 @@ spring:
   datasource:
     url: jdbc:mysql://47.104.243.13:3306/apihub?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: ApiHub
-    password: Aa257774050
+    password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
   autoconfigure:
     exclude:
@@ -21,7 +21,7 @@ spring:
 
 apihub:
   jwt:
-    secret: ApiHubCourseDesignSecretKeyMustBeLongEnough2026
+    secret: ${JWT_SECRET:}
     expire-seconds: 7200
 
 springdoc:
@@ -33,3 +33,4 @@ springdoc:
 logging:
   pattern:
     console: "%d{HH:mm:ss.SSS} [%X{traceId}] %-5level %logger{36} - %msg%n"
+

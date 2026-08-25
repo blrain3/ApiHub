@@ -10,7 +10,7 @@ apihub:
   weather:
     provider: amap
     amap:
-      key: f820ccb8c37e95ba316907122d2b8a66
+      key: ${AMAP_KEY:}
       base-url: https://restapi.amap.com
 
 springdoc:
@@ -20,3 +20,4 @@ springdoc:
 logging:
   pattern:
     console: "%d{HH:mm:ss.SSS} [%X{traceId}] %-5level %logger{36} - %msg%n"
+
