@@ -66,9 +66,11 @@ dist/
 Thumbs.db
 .gitkeep
 
-# IDE temporary files
+# Agent / IDE temporary files
 *.tmp
 *.bak
+.claude/
+CLAUDE.md
 
 # Spring Boot
 application-local.yml
