@@ -5,13 +5,13 @@ spring:
   application:
     name: api-invoke
 
-# 第三方天气配置（当前已接入高德天气；生产环境建议改回环境变量注入）
+# 第三方天气：Key 通过环境变量或 application-local.yml 注入
 apihub:
   weather:
     provider: amap
     amap:
       key: ${AMAP_KEY:}
-      base-url: https://restapi.amap.com
+      base-url: ${AMAP_BASE_URL:https://restapi.amap.com}
 
 springdoc:
   swagger-ui:
@@ -20,4 +20,3 @@ springdoc:
 logging:
   pattern:
     console: "%d{HH:mm:ss.SSS} [%X{traceId}] %-5level %logger{36} - %msg%n"
-

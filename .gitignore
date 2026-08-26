@@ -76,6 +76,9 @@ CLAUDE.md
 application-local.yml
 application-dev.yml
 application-prod.yml
+.env
+.env.local
+.env.*.local
 
 # Logs
 logs/

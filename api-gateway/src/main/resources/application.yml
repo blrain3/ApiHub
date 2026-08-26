@@ -1,4 +1,4 @@
-server:
+﻿server:
   port: 8080
   servlet:
     encoding:
@@ -10,25 +10,26 @@ spring:
   application:
     name: api-gateway
   datasource:
-    url: jdbc:mysql://47.104.243.13:3306/apihub?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    username: ApiHub
-    password: ${DB_PASSWORD:}
+    # 敏感信息通过环境变量或 application-local.yml 注入，勿写入仓库
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/apihub?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
-      host: 127.0.0.1
-      port: 6379
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
       timeout: 500ms
       connect-timeout: 500ms
 
 apihub:
   jwt:
-    secret: ${JWT_SECRET:}
-    expire-seconds: 7200
+    secret: ${JWT_SECRET:please-change-me-to-a-long-random-secret-key}
+    expire-seconds: ${JWT_EXPIRE_SECONDS:7200}
   routes:
-    auth: http://127.0.0.1:8081
-    admin: http://127.0.0.1:8082
-    invoke: http://127.0.0.1:8083
+    auth: ${ROUTE_AUTH:http://127.0.0.1:8081}
+    admin: ${ROUTE_ADMIN:http://127.0.0.1:8082}
+    invoke: ${ROUTE_INVOKE:http://127.0.0.1:8083}
   open:
     timestamp-window-seconds: 300
     rate-limit:
@@ -39,5 +40,3 @@ apihub:
 logging:
   pattern:
     console: "%d{HH:mm:ss.SSS} [%X{traceId}] %-5level %logger{36} - %msg%n"
-
-

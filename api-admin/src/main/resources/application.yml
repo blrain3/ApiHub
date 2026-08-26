@@ -10,9 +10,10 @@ spring:
   application:
     name: api-admin
   datasource:
-    url: jdbc:mysql://47.104.243.13:3306/apihub?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    username: ApiHub
-    password: ${DB_PASSWORD:}
+    # 敏感信息通过环境变量或 application-local.yml 注入，勿写入仓库
+    url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/apihub?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
   autoconfigure:
     exclude:
@@ -26,4 +27,3 @@ springdoc:
 logging:
   pattern:
     console: "%d{HH:mm:ss.SSS} [%X{traceId}] %-5level %logger{36} - %msg%n"
-
